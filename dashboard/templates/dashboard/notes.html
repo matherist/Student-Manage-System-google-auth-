@@ -7,7 +7,7 @@
     <div class="row">
         {% for note in notes%}
         <div class="col-md-3">
-            <a href="#">
+            <a href="{% url 'notes-details' note.id %}">
                 <div class="card">
                     <div class="card-header">{{note.title}}</div>
                     <div class="card-body">{{note.description|slice:"0:100"}}</div>
@@ -23,6 +23,12 @@
     </div>
 </div>
 <br><br>
+<script type="text/javascript">
+    window.onpopstate = function(event) {
+        window.location.href = '/';
+    };
+</script>
+<br></br>
 <div class="container">
     <form method="POST">
         {% csrf_token %}
@@ -38,5 +44,6 @@
         </div>
     </form>
 </div>
+
 
 {% endblock content %}

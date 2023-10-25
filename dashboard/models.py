@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+import requests
+from bs4 import BeautifulSoup
 
 # Create your models here.
 
@@ -26,4 +28,11 @@ class Homework(models.Model):
     def __str__(self):
         return self.subject
 
-        
+
+class Event(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    date = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    event_link = models.URLField()
+    image_url = models.URLField()

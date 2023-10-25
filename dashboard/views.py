@@ -2,6 +2,14 @@ from django.shortcuts import render, redirect
 from .forms import *
 from django.contrib import messages
 from django.views import generic
+
+from .rand_pict import *
+import requests
+from bs4 import BeautifulSoup
+
+from django.contrib.auth.models import User 
+default_user = User.objects.get(username='dinaiym')
+
 # Create your views here.
 
 def home(request):
@@ -60,3 +68,31 @@ def homework(request):
         'homework_done': homework_done, 
         'form': form}
     return render(request, 'dashboard/homework.html', context)
+
+def fetch_and_save_events():
+    url = "https://it-events.com/"
+    response = requests.get(url)
+
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        event_items = soup.find_all("div", class_="event-list-item")
+
+        for item in enumerate(event_items):
+
+            event = Event(
+                user=default_user, 
+                title=item.find("a", class_="event-list-item__title").text,
+                date=item.find("div", class_="event-list-item__info").text,
+                event_link="https://it-events.com" + item.find("a", class_="event-list-item__title")["href"],
+               
+            )
+            location_element = item.find("div", class_="event-list-item__info_location")
+            event.location = location_element.text if location_element else "Location not available"
+            event.save()
+
+def events(request):
+    fetch_and_save_events()
+    events = Event.objects.all()[:18]
+    return render(request, 'header/events.html', {'events': events, 'images': data_links})

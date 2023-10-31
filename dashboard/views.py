@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from .forms import *
-from .models import *
 from .rand_pict import *
 from django.contrib import messages
 from django.views import generic
@@ -146,3 +145,49 @@ def events(request):
     events = Event.objects.all()[:18]
     return render(request, 'header/events.html', {'events': events, 'images': data_links})
 
+def todo(request):
+    if request.method == "POST":
+       form = TodoForm()
+       if form.is_valid():
+        try:
+            finished = request.POST["is_finished"]
+            if finished == "on":
+                finished = True
+            else:
+                finished = False
+        except:
+            finished = False
+        todos = Todo(
+            user = request.user,
+            title = request.POST["title"],
+            is_finished = finished,
+        )
+        todos.save()
+        messages.success(request, f"Todo added from {request.user.username}!!")
+    else:
+        form = TodoForm()
+    todo = Todo.objects.filter(user=request.user)
+    if len(todo) == 0:
+        todos_done = True
+    else:
+        todos_done = False
+    context = {
+        'form': form,
+        'todos': todo,
+        'done': todos_done
+    }
+    return render(request, "dashboard/todo.html", context)
+
+
+def update_todo(request, pk=None):
+    todo = Todo.objects.get(id=pk)
+    if todo.is_finished == True:
+        todo.is_finished = False
+    else:
+        todo.is_finished = True
+    todo.save()
+    return redirect("todo")
+
+def delete_todo(request,pk=None):
+    Todo.objects.get(id=pk).delete()
+    return redirect("todo")

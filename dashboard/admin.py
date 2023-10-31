@@ -4,3 +4,4 @@ from . models import *
 admin.site.register(Notes)
 admin.site.register(Homework)
 admin.site.register(Event)
+admin.site.register(Todo)

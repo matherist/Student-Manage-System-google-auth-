@@ -191,3 +191,22 @@ def update_todo(request, pk=None):
 def delete_todo(request,pk=None):
     Todo.objects.get(id=pk).delete()
     return redirect("todo")
+
+
+def books(request):
+    return render(request, "dashboard/books.html") #2:26:35
+
+
+def register(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f"Account created for {username}!!")
+    else:
+       form = UserRegistrationForm()
+    context = {
+        'form': form
+    }
+    return render(request, "dashboard/register.html", context)

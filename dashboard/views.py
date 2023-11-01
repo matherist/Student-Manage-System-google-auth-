@@ -8,11 +8,13 @@ from bs4 import BeautifulSoup
 from django.contrib.auth.models import User 
 from youtubesearchpython import VideosSearch
 default_user = User.objects.get(username='dinaiym')
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def home(request):
     return render(request, 'dashboard/home.html')
 
+@login_required
 def notes(request):
     if request.method == "POST":
         form = NotesForm(request.POST)
@@ -27,14 +29,16 @@ def notes(request):
     context = {'notes': notes, 'form':form}
     return render(request, 'dashboard/notes.html', context)
 
+@login_required
 def delete_note(request, pk=None):
     Notes.objects.get(id=pk).delete()
     return redirect("notes")
 
+
 class NotesDetailView(generic.DetailView):
     model = Notes
 
-
+@login_required
 def homework(request):
     form = HomeworkForm()  # Initialize the form here
 
@@ -71,6 +75,7 @@ def homework(request):
     }
     return render(request, 'dashboard/homework.html', context)
 
+@login_required
 def update_homework(request, pk=None):
     homework = Homework.objects.get(id=pk)
     if homework.is_finished == True:
@@ -80,11 +85,12 @@ def update_homework(request, pk=None):
     homework.save()
     return redirect('homework')
 
+@login_required
 def delete_homework(request, pk=None):
     Homework.objects.get(id=pk).delete()
     return redirect("homework")
 
-
+@login_required
 def youtube(request):
     if request.method == "POST":
         form = DashboardForm(request.POST)
@@ -145,12 +151,13 @@ def events(request):
     events = Event.objects.all()[:18]
     return render(request, 'header/events.html', {'events': events, 'images': data_links})
 
+@login_required
 def todo(request):
+    form = TodoForm()
     if request.method == "POST":
-       form = TodoForm()
        if form.is_valid():
         try:
-            finished = request.POST["is_finished"]
+            finished = form.cleaned_data.get("is_finished", False)
             if finished == "on":
                 finished = True
             else:
@@ -158,14 +165,13 @@ def todo(request):
         except:
             finished = False
         todos = Todo(
-            user = request.user,
-            title = request.POST["title"],
-            is_finished = finished,
-        )
+        user=request.user,
+        title=form.cleaned_data["title"],
+        is_finished=finished,
+    )
         todos.save()
         messages.success(request, f"Todo added from {request.user.username}!!")
-    else:
-        form = TodoForm()
+    # else:
     todo = Todo.objects.filter(user=request.user)
     if len(todo) == 0:
         todos_done = True
@@ -178,7 +184,7 @@ def todo(request):
     }
     return render(request, "dashboard/todo.html", context)
 
-
+@login_required
 def update_todo(request, pk=None):
     todo = Todo.objects.get(id=pk)
     if todo.is_finished == True:
@@ -188,13 +194,14 @@ def update_todo(request, pk=None):
     todo.save()
     return redirect("todo")
 
+@login_required
 def delete_todo(request,pk=None):
     Todo.objects.get(id=pk).delete()
     return redirect("todo")
 
 
-def books(request):
-    return render(request, "dashboard/books.html") #2:26:35
+# def books(request):
+#     return render(request, "dashboard/books.html") #2:26:35
 
 
 def register(request):
@@ -212,6 +219,7 @@ def register(request):
     }
     return render(request, "dashboard/register.html", context)
 
+@login_required
 def profile(request):
     homeworks = Homework.objects.filter(is_finished=False, user=request.user)
     todos = Todo.objects.filter(is_finished=False, user=request.user)

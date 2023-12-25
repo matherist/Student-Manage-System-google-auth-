@@ -1,0 +1,3 @@
+[submodule "StudentBuggy"]
+	path = StudentBuggy
+	url = git@github.com:matherist/StudentBuggy.git
